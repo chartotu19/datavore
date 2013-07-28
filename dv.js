@@ -10,6 +10,26 @@ var dv = (function() {
  */
 var dv = {version: "1.0.0"};
 
+// associative array holding references to the created tables
+_registry = []
+
+dv.register = function(name,ref){
+    if(_registry[name] !== undefined){
+        //name already exists
+        name = "_"+name;
+        dv.register(name,ref);
+    }
+    _registry[name] = ref
+    return name;
+}
+
+dv.get = function(name){
+    if(_registry[name] !== undefined){
+        return _registry[name]
+    }
+    else
+        return false
+}
 dv.array = function(n) {
     var a = Array(n);
     for (var i = n; --i >= 0;) { a[i] = 0; }
@@ -69,9 +89,16 @@ dv.type = {
     unknown: "unknown"
 };
 
-dv.table = function(input)
+dv.table = function(input,name)
 {
     var table = []; // the data table
+    //if only parameter passed is a name{string}
+    if(typeof input === "string"){
+        name = input
+        input = false
+    }
+    // register the table
+    dv.register(name,table);
     
     table.addColumn = function(name, values, type, iscolumn) {
         type = type || dv.type.unknown;
