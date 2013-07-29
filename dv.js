@@ -92,6 +92,27 @@ dv.type = {
 dv.table = function(input,name)
 {
     var table = []; // the data table
+
+    var _listeners = {
+        "table":[]
+    }
+
+    //event firer
+    _fireEvent = function(name){
+        //trigger all listeners attached to the column `name`
+        if(name !== undefined && _listeners.name !== undefined){
+            for (var i = _listeners[name].length - 1; i >= 0; i--) {
+                _listeners[name][i](table.get(name))
+            }
+        }
+        // trigger all listeners attached to the table.
+        if(_listeners.table.length !== 0){
+            for (var i = _listeners.table.length - 1; i >= 0; i--) {
+                _listeners.table[i](table);
+            }
+        }
+    }
+
     //if only parameter passed is a name{string}
     if(typeof input === "string"){
         name = input
@@ -100,6 +121,20 @@ dv.table = function(input,name)
     // register the table
     _register(name,table);
    
+    table.addListener = function(opts,fn){
+        if(typeof opts === "function"){
+            fn = opts
+            _listeners.table.push(fn)
+            return table
+        }
+        else{
+            if(opts.col !== undefined && table[opts.col] !== undefined){
+                _listeners[opts.col] = _listeners[opts.col] || [];
+                _listeners[opts.col].push(fn);
+            }
+        }
+    }
+
     table.addColumn = function(name, values, type, iscolumn) {
         type = type || dv.type.unknown;
         var compress = (type === dv.type.nominal || type === dv.type.ordinal);
@@ -121,6 +156,8 @@ dv.table = function(input,name)
 
         table.push(vals);
         table[name] = vals;
+        // fire listeners
+        _fireEvent(name);
     };
     
     table.removeColumn = function(col) {
@@ -128,6 +165,7 @@ dv.table = function(input,name)
         if (col != null) {
             delete table[col.name];
             table.splice(col.index, 1);
+            _fireEvent(name);
         }
         return col;
     };
