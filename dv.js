@@ -13,17 +13,17 @@ var dv = {version: "1.0.0"};
 // associative array holding references to the created tables
 _registry = []
 
-dv.register = function(name,ref){
+_register = function(name,ref){
     if(_registry[name] !== undefined){
-        //name already exists
+        //name already exists. Create an alternate name.
         name = "_"+name;
-        dv.register(name,ref);
+        _register(name,ref);
     }
     _registry[name] = ref
     return name;
 }
 
-dv.get = function(name){
+dv.getTable = function(name){
     if(_registry[name] !== undefined){
         return _registry[name]
     }
@@ -98,8 +98,8 @@ dv.table = function(input,name)
         input = false
     }
     // register the table
-    dv.register(name,table);
-    
+    _register(name,table);
+   
     table.addColumn = function(name, values, type, iscolumn) {
         type = type || dv.type.unknown;
         var compress = (type === dv.type.nominal || type === dv.type.ordinal);
